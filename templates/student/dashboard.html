@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="bi bi-calendar-event"></i> Upcoming Events
+</h2>
+
+{% if events %}
+    <div class="row">
+        {% for event in events %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        {% if event.id in user_rsvps %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> RSVP'd
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-people"></i> {{ event.club.name }}
+                        {% if event.club_id in followed_club_ids %}
+                            <i class="bi bi-heart-fill text-danger"></i>
+                        {% endif %}
+                    </p>
+                    
+                    <p class="card-text mb-1">
+                        <i class="bi bi-calendar"></i> 
+                        {{ event.event_datetime.strftime('%b %d, %Y') }}
+                    </p>
+                    <p class="card-text mb-1">
+                        <i class="bi bi-clock"></i> 
+                        {{ event.event_datetime.strftime('%I:%M %p') }}
+                    </p>
+                    <p class="card-text mb-3">
+                        <i class="bi bi-geo-alt"></i> 
+                        {{ event.location }}
+                    </p>
+                    
+                    <a href="{{ url_for('student.event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No upcoming events yet. Check back soon!
+    </div>
+{% endif %}
+{% endblock %}

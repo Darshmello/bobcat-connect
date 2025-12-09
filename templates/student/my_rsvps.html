@@ -1,0 +1,49 @@
+{% extends "/base/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My RSVPs</h2>
+    
+    <div class="mb-3 text-end">
+        <a href="#" class="btn btn-outline-primary">
+            <i class="bi bi-calendar"></i> Calendar View
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Upcoming Events</h4>
+        </div>
+        <div class="card-body">
+            {% if events %}
+                <div class="list-group">
+                {% for event in events %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ event.title }}</h5>
+                            <p class="mb-1 text-muted">
+                                <i class="bi bi-clock"></i> {{ event.date }} | 
+                                <i class="bi bi-geo-alt"></i> {{ event.location }}
+                            </p>
+                        </div>
+                        <a href="{{ url_for('student.event_detail', event_id=event.id) }}" class="btn btn-sm btn-info">View Details</a>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">You haven't RSVP'd to any upcoming events yet.</p>
+                <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Discover Events</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h4>Past Events Attended</h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">No past events history available.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

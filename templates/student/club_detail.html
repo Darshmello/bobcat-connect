@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<a href="{{ url_for('student.browse_clubs') }}" class="btn btn-sm btn-secondary mb-3">
+    <i class="bi bi-arrow-left"></i> Back to Clubs
+</a>
+
+<div class="card shadow mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h2>{{ club.name }}</h2>
+            <form method="POST" action="{{ url_for('student.toggle_follow', club_id=club.id) }}">
+                {% if is_following %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-heart-fill"></i> Unfollow
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-heart"></i> Follow
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+
+        <p class="text-muted mb-3">
+            <i class="bi bi-people"></i> {{ follower_count }} followers
+        </p>
+
+        <h5>About</h5>
+        <p>{{ club.description or 'No description available.' }}</p>
+    </div>
+</div>
+
+<h4 class="mb-3">Upcoming Events</h4>
+
+{% if upcoming_events %}
+    <div class="row">
+        {% for event in upcoming_events %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <p class="card-text mb-1">
+                        <i class="bi bi-calendar"></i> {{ event.event_datetime.strftime('%b %d, %Y at %I:%M %p') }}
+                    </p>
+                    <p class="card-text mb-3">
+                        <i class="bi bi-geo-alt"></i> {{ event.location }}
+                    </p>
+                    <a href="{{ url_for('student.event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm">
+                        View Event
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No upcoming events from this club.</p>
+{% endif %}
+{% endblock %}

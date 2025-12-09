@@ -1,0 +1,37 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="bi bi-heart"></i> Clubs I Follow
+</h2>
+
+{% if clubs %}
+    <div class="row">
+        {% for club in clubs %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ club.name }}
+                        <i class="bi bi-heart-fill text-danger"></i>
+                    </h5>
+                    <p class="card-text">{{ club.description[:100] }}{% if club.description|length > 100 %}...{% endif %}</p>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-calendar-event"></i> 
+                        {{ club.events|length }} upcoming events
+                    </p>
+                    <a href="{{ url_for('student.club_detail', club_id=club.id) }}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> View Club
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> You're not following any clubs yet. 
+        <a href="{{ url_for('student.browse_clubs') }}">Browse clubs</a>
+    </div>
+{% endif %}
+{% endblock %}
