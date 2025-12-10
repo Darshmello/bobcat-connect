@@ -1,56 +1,117 @@
 {% extends "base/base.html" %}
 
 {% block content %}
-<h2 class="mb-4">
-    <i class="bi bi-calendar-event"></i> Upcoming Events
-</h2>
+<div class="row">
+    <div class="col-md-3 d-none d-md-block">
+        <div class="list-group sticky-top" style="top: 20px;">
+            <a href="{{ url_for('student.dashboard') }}" class="list-group-item list-group-item-action {% if feed_type == 'global' %}active{% endif %}">
+                <i class="bi bi-globe"></i> Global Feed
+            </a>
+            <a href="{{ url_for('student.following_feed') }}" class="list-group-item list-group-item-action {% if feed_type == 'following' %}active{% endif %}">
+                <i class="bi bi-people-fill"></i> My Following
+            </a>
+            <a href="{{ url_for('student.my_rsvps') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-check"></i> My Schedule
+            </a>
+        </div>
+    </div>
 
-{% if events %}
-    <div class="row">
-        {% for event in events %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title">{{ event.title }}</h5>
-                        {% if event.id in user_rsvps %}
-                            <span class="badge bg-success">
-                                <i class="bi bi-check-circle"></i> RSVP'd
-                            </span>
-                        {% endif %}
+    <div class="col-md-8">
+        <h3 class="mb-4">
+            {% if feed_type == 'following' %}
+                Posts from Clubs You Follow
+            {% else %}
+                Campus Activity Feed
+            {% endif %}
+        </h3>
+
+        {% if events %}
+            {% for post in events %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                            {{ post.club.name[0] }}
+                        </div>
+                        <div>
+                            <a href="{{ url_for('student.club_detail', club_name_slug=post.club.name|replace(' ', '_')) }}" class="fw-bold text-dark text-decoration-none">
+                                {{ post.club.name }}
+                            </a>
+                            {% if post.club.id in followed_club_ids %}
+                                <i class="bi bi-patch-check-fill text-primary small" title="Following"></i>
+                            {% endif %}
+                            <div class="text-muted small">{{ post.created_at.strftime('%B %d at %I:%M %p') }}</div>
+                        </div>
                     </div>
                     
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-people"></i> {{ event.club.name }}
-                        {% if event.club_id in followed_club_ids %}
-                            <i class="bi bi-heart-fill text-danger"></i>
+                    {% if post.is_event %}
+                        <span class="badge bg-danger">EVENT</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">POST</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    {% if post.image_file and post.image_file != 'default.jpg' %}
+                        <div class="mb-3 rounded overflow-hidden border">
+                            <img src="{{ url_for('static', filename='posts/' + post.image_file) }}" class="img-fluid w-100" alt="Post Image">
+                        </div>
+                    {% endif %}
+
+                    {% if post.is_event %}
+                        <div class="alert alert-light border d-flex align-items-center" role="alert">
+                            <div class="me-3 text-center text-danger">
+                                {% if post.event_date %}
+                                    <h4 class="mb-0 fw-bold">{{ post.event_date.strftime('%b') }}</h4>
+                                    <h2 class="mb-0 fw-bold lh-1">{{ post.event_date.strftime('%d') }}</h2>
+                                {% else %}
+                                    <i class="bi bi-calendar-event fs-1"></i>
+                                {% endif %}
+                            </div>
+                            <div class="border-start ps-3">
+                                <h5 class="alert-heading mb-1">{{ post.event_title }}</h5>
+                                <p class="mb-0 text-muted small">
+                                    <i class="bi bi-geo-alt-fill"></i> {{ post.event_location or 'TBD' }} 
+                                    {% if post.event_date %}
+                                        | <i class="bi bi-clock-fill"></i> {{ post.event_date.strftime('%I:%M %p') }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <p class="card-text">{{ post.caption }}</p>
+                </div>
+
+                <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                    <div class="d-flex gap-2">
+                        {% if post.is_event %}
+                            <form action="{{ url_for('student.toggle_rsvp', post_id=post.id) }}" method="POST" class="flex-grow-1">
+                                {% if post.id in user_rsvps %}
+                                    <button type="submit" class="btn btn-success w-100 btn-sm">
+                                        <i class="bi bi-check-circle-fill"></i> Going
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-outline-primary w-100 btn-sm">
+                                        <i class="bi bi-calendar-plus"></i> RSVP
+                                    </button>
+                                {% endif %}
+                            </form>
                         {% endif %}
-                    </p>
-                    
-                    <p class="card-text mb-1">
-                        <i class="bi bi-calendar"></i> 
-                        {{ event.event_datetime.strftime('%b %d, %Y') }}
-                    </p>
-                    <p class="card-text mb-1">
-                        <i class="bi bi-clock"></i> 
-                        {{ event.event_datetime.strftime('%I:%M %p') }}
-                    </p>
-                    <p class="card-text mb-3">
-                        <i class="bi bi-geo-alt"></i> 
-                        {{ event.location }}
-                    </p>
-                    
-                    <a href="{{ url_for('student.event_detail', event_id=event.id) }}" class="btn btn-primary btn-sm w-100">
-                        <i class="bi bi-eye"></i> View Details
-                    </a>
+                        
+                        <button class="btn btn-outline-secondary btn-sm flex-grow-1"><i class="bi bi-heart"></i> Like</button>
+                        <button class="btn btn-outline-secondary btn-sm flex-grow-1"><i class="bi bi-share"></i> Share</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-newspaper display-1 text-muted"></i>
+                <h3 class="mt-3 text-muted">No posts yet</h3>
+                <p>Follow clubs or verify the database seed.</p>
+            </div>
+        {% endif %}
     </div>
-{% else %}
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> No upcoming events yet. Check back soon!
-    </div>
-{% endif %}
+</div>
 {% endblock %}

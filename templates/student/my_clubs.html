@@ -20,7 +20,7 @@
                         <i class="bi bi-calendar-event"></i> 
                         {{ club.events|length }} upcoming events
                     </p>
-                    <a href="{{ url_for('student.club_detail', club_id=club.id) }}" class="btn btn-primary btn-sm w-100">
+                    <a href="{{ url_for('student.club_detail', club_name_slug=club.name|replace(' ', '_')) }}" class="btn btn-primary btn-sm w-100">
                         <i class="bi bi-eye"></i> View Club
                     </a>
                 </div>

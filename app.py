@@ -1,9 +1,10 @@
 from flask import Flask, render_template, redirect, url_for
-from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, current_user
-from models import db, User
+# UPDATED: Import extensions from the separate file to allow access in other blueprints
+from extensions import db, bcrypt, login_manager, cache 
+from models import User
 import os
 from dotenv import load_dotenv
+from flask_login import current_user
 
 load_dotenv()
 
@@ -12,10 +13,19 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-pro
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///bobcat.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize extensions
+# --- NEW: Cache Configuration ---
+# Configures Flask to use simple memory caching for the club dashboards
+app.config['CACHE_TYPE'] = 'SimpleCache' 
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+
+# --- UPDATED: Initialize Extensions ---
+# Connects the extensions (created in extensions.py) to this specific app instance
 db.init_app(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
+bcrypt.init_app(app)
+login_manager.init_app(app)
+cache.init_app(app)  # <--- FIX: This line solves the "no attribute 'app'" error
+
+# Login Manager Setup
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Please login to access this page.'
 login_manager.login_message_category = 'info'
@@ -32,15 +42,16 @@ app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(student, url_prefix='/student')
 
 # Will be created by Neil/Darsh
+# Updated to look for 'club_bp' based on the standard naming convention
 try:
-    from blueprints.club import club
-    app.register_blueprint(club, url_prefix='/club')
+    from blueprints.club import club_bp
+    app.register_blueprint(club_bp, url_prefix='/club')
 except ImportError:
     pass
 
 try:
-    from blueprints.admin import admin
-    app.register_blueprint(admin, url_prefix='/admin')
+    from blueprints.admin import admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 except ImportError:
     pass
 

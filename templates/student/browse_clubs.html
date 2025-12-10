@@ -21,8 +21,9 @@
             </thead>
             <tbody>
                 {% for club in clubs %}
-                <tr class="club-row"> <td class="fw-bold">
-                        <a href="/club/{{ club.name|replace(' ', '_') }}" class="text-decoration-none text-dark">
+                <tr class="club-row">
+                    <td class="fw-bold">
+                        <a href="{{ url_for('student.club_detail', club_name_slug=club.name|replace(' ', '_')) }}" class="text-decoration-none text-dark">
                             {{ club.name }}
                         </a>
                     </td>
@@ -49,7 +50,7 @@
                         {{ club.member_count }}
                     </td>
                     <td>
-                        <a href="/club/{{ club.name|replace(' ', '_') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ url_for('student.club_detail', club_name_slug=club.name|replace(' ', '_')) }}" class="btn btn-sm btn-outline-primary">
                             View Details
                         </a>
                     </td>
@@ -62,21 +63,14 @@
 
 <script>
     document.getElementById('clubSearch').addEventListener('keyup', function() {
-        // 1. Get the search query and convert to lowercase
         var searchQuery = this.value.toLowerCase();
-        
-        // 2. Get all table rows
         var rows = document.querySelectorAll('.club-row');
-
-        // 3. Loop through rows and hide those that don't match
         rows.forEach(function(row) {
-            // Get the text content of the row (Name, Category, etc.)
             var text = row.innerText.toLowerCase();
-            
             if (text.includes(searchQuery)) {
-                row.style.display = ''; // Show row
+                row.style.display = '';
             } else {
-                row.style.display = 'none'; // Hide row
+                row.style.display = 'none';
             }
         });
     });
