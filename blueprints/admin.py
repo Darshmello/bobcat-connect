@@ -90,6 +90,32 @@ def delete_user(user_id):
     flash('User account deleted.', 'success')
     return redirect(url_for('admin.manage_users'))
 
+@admin_bp.route('/reject_club/<int:club_id>')
+@login_required
+def reject_club(club_id):
+    if not check_admin_role():
+        return redirect(url_for('index'))
+
+    club = Club.query.get_or_404(club_id)
+
+    # Scenario 1: It's a completely new club proposal (Hidden)
+    # Action: Delete the fake club entirely.
+    if not club.verified:
+        db.session.delete(club)
+        flash(f'Club proposal "{club.name}" has been rejected and removed.', 'info')
+
+    # Scenario 2: It's a claim on an existing club (Visible)
+    # Action: Keep the club, but kick the user off the "Owner" seat.
+    elif not club.officer_verified and club.owner_id:
+        user_email = club.owner.email # Save for message
+        club.owner_id = None
+        club.officer_verified = False
+        # We DO NOT set verified=False, because the club itself is real/scraped.
+        flash(f'Claim by {user_email} for "{club.name}" was rejected.', 'info')
+
+    db.session.commit()
+    return redirect(url_for('admin.dashboard'))
+
 # --- NEW: Feed Management Route ---
 
 @admin_bp.route('/post/<int:post_id>/delete', methods=['POST'])

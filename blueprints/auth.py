@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-# 1. Import extensions we created earlier
 from extensions import db, bcrypt
-# 2. Import the User model (This fixes your NameError)
 from models import User
 
 auth = Blueprint('auth', __name__)
@@ -19,8 +17,10 @@ FLASH_SUCCESS = 'success'
 UCMERCED_DOMAIN = '@ucmerced.edu'
 VALID_ROLES = ['student', 'club', 'admin']
 
+# --- NEW: SECURITY CODES ---
+ADMIN_CODES = ['darshisadmin', 'neilisadmin']
+
 def redirect_by_role(user):
-    """Helper function to redirect user based on their role"""
     role_redirects = {
         'student': 'student.dashboard',
         'club': 'club.dashboard',
@@ -38,22 +38,29 @@ def register():
         password = request.form.get('password')
         role = request.form.get('role')
         
-        # Validate @ucmerced.edu email
+        # 1. Validate Email
         if not email.endswith(UCMERCED_DOMAIN):
             flash(INVALID_EMAIL_MSG, FLASH_DANGER)
             return redirect(url_for('auth.register'))
         
-        # Validate role
+        # 2. Validate Role
         if role not in VALID_ROLES:
             flash(INVALID_ROLE_MSG, FLASH_DANGER)
             return redirect(url_for('auth.register'))
         
-        # Check if user exists
+        # 3. NEW: Validate Admin Passcode
+        if role == 'admin':
+            admin_code = request.form.get('admin_code')
+            if admin_code not in ADMIN_CODES:
+                flash('Incorrect Admin Passcode. Permission denied.', FLASH_DANGER)
+                return redirect(url_for('auth.register'))
+
+        # 4. Check if user exists
         if User.query.filter_by(email=email).first():
             flash(EMAIL_ALREADY_REGISTERED, FLASH_DANGER)
             return redirect(url_for('auth.register'))
         
-        # Hash password using the shared bcrypt extension
+        # 5. Create User
         hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
         user = User(email=email, password_hash=hashed_pw, role=role)
         db.session.add(user)
@@ -73,7 +80,6 @@ def login():
         email = request.form.get('email').strip().lower()
         password = request.form.get('password')
         
-        # This line was crashing because 'User' wasn't imported
         user = User.query.filter_by(email=email).first()
         
         if user and bcrypt.check_password_hash(user.password_hash, password):

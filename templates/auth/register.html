@@ -18,15 +18,22 @@
                         <label for="password" class="form-label">Password</label>
                         <input type="password" id="password" name="password" class="form-control" minlength="6" required>
                     </div>
+                    
                     <div class="mb-3">
                         <label for="role" class="form-label">I am a:</label>
-                        <select id="role" name="role" class="form-select" required>
+                        <select id="role" name="role" class="form-select" required onchange="toggleAdminField()">
                             <option value="">Select role...</option>
                             <option value="student">Student</option>
                             <option value="club">Club Officer</option>
                             <option value="admin">Admin</option>
                         </select>
                     </div>
+
+                    <div class="mb-3" id="admin-code-box" style="display: none;">
+                        <label for="admin_code" class="form-label text-danger fw-bold">Admin Passcode</label>
+                        <input type="password" id="admin_code" name="admin_code" class="form-control" placeholder="Enter secure code...">
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-person-check"></i> Register
                     </button>
@@ -38,4 +45,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleAdminField() {
+        var roleSelect = document.getElementById("role");
+        var adminBox = document.getElementById("admin-code-box");
+        var adminInput = document.getElementById("admin_code");
+
+        if (roleSelect.value === "admin") {
+            adminBox.style.display = "block";
+            adminInput.required = true;
+        } else {
+            adminBox.style.display = "none";
+            adminInput.required = false;
+            adminInput.value = ""; // Clear it if they switch back
+        }
+    }
+</script>
 {% endblock %}

@@ -7,7 +7,7 @@
             <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-primary">
                 <i class="bi bi-globe"></i> View Global Feed
             </a>
-            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-dark">
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-light">
                 <i class="bi bi-people-fill"></i> Manage Users
             </a>
         </div>
@@ -30,38 +30,53 @@
         </div>
     </div>
 
-    <h4>Pending Approvals</h4>
+    <h4 class="mb-3">Pending Approvals</h4>
     {% if pending_clubs %}
-    <table class="table table-striped align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Club Name</th>
-                <th>Status Issue</th>
-                <th>Owner ID</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for club in pending_clubs %}
-            <tr>
-                <td class="fw-bold">{{ club.name }}</td>
-                <td>
-                    {% if not club.verified %}
-                        <span class="badge bg-danger">New Club (Hidden)</span>
-                    {% elif not club.officer_verified %}
-                        <span class="badge bg-warning text-dark">Officer Claim (Visible)</span>
-                    {% endif %}
-                </td>
-                <td>{{ club.owner_id }}</td>
-                <td>
-                    <a href="{{ url_for('admin.verify_club', club_id=club.id) }}" class="btn btn-sm btn-success">
-                        <i class="bi bi-check-lg"></i> Approve
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Club Name</th>
+                    <th>Status Issue</th>
+                    <th>Requesting Officer</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for club in pending_clubs %}
+                <tr>
+                    <td class="fw-bold">{{ club.name }}</td>
+                    <td>
+                        {% if not club.verified %}
+                            <span class="badge bg-danger">New Club (Hidden)</span>
+                        {% elif not club.officer_verified %}
+                            <span class="badge bg-warning text-dark">Officer Claim (Visible)</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="text-info font-monospace">
+                        {{ club.owner.email if club.owner else 'No Owner' }}
+                    </td>
+                    
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('admin.verify_club', club_id=club.id) }}" class="btn btn-sm btn-success" title="Approve">
+                                <i class="bi bi-check-lg"></i> Approve
+                            </a>
+
+                            <a href="{{ url_for('admin.reject_club', club_id=club.id) }}" 
+                               class="btn btn-sm btn-outline-danger" 
+                               title="Reject & Remove"
+                               onclick="return confirm('Are you sure you want to REJECT this request? This action cannot be undone.');">
+                                <i class="bi bi-x-lg"></i> Reject
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
         <div class="alert alert-success">No pending approvals. Good job!</div>
     {% endif %}
